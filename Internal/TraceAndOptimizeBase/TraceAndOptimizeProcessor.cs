@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using nadena.dev.ndmf;
 using UnityEngine;
+using UnityEditor;
 
 namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
 {
@@ -39,6 +40,7 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         public bool SkipRemoveMaterialUnusedProperties;
         public bool SkipAutoMergeBlendShape;
         public bool SkipRemoveUnusedSubMesh;
+        public bool SkipIfApplyOnPlay;
 
         public Dictionary<SkinnedMeshRenderer, HashSet<string>> PreserveBlendShapes =
             new Dictionary<SkinnedMeshRenderer, HashSet<string>>();
@@ -78,6 +80,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
             SkipRemoveMaterialUnusedProperties = config.debugOptions.skipRemoveMaterialUnusedProperties;
             SkipAutoMergeBlendShape = config.debugOptions.skipAutoMergeBlendShape;
             SkipRemoveUnusedSubMesh = config.debugOptions.skipRemoveUnusedSubMesh;
+            SkipIfApplyOnPlay = !SessionState.GetBool(
+                "AvatarOptimizer.ApplyOnPlay",
+                false
+            );
 
             Enabled = true;
         }
@@ -102,6 +108,10 @@ namespace Anatawa12.AvatarOptimizer.Processors.TraceAndOptimizes
         {
             var state = context.GetState<TraceAndOptimizeState>();
             if (!state.Enabled) return;
+            if (state.SkipIfApplyOnPlay && EditorApplication.isPlayingOrWillChangePlaymode)
+            {
+                return;
+            }
             Execute(context, state);
         }
 
